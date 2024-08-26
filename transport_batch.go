@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 
 	"github.com/miekg/dns"
+	E "github.com/sagernet/sing/common/exceptions"
 )
 
 
@@ -71,7 +72,7 @@ func (t *BatchTransport) Exchange(ctx context.Context, message *dns.Msg) (*dns.M
 	var once    sync.Once
 	var errOnce sync.Once
 	done := make(chan struct{})
-	
+	ctx, cancel := context.WithCancel(ctx)
 	for _, transport := range t.transports {
 		if !transport.Raw(){
 			continue
@@ -79,28 +80,31 @@ func (t *BatchTransport) Exchange(ctx context.Context, message *dns.Msg) (*dns.M
 		count.Add(1)
 		transport := transport
 		go func(){
-			var send = false
-			if ret, err := transport.Exchange(ctx, message); err == nil {
+			ret, err := transport.Exchange(ctx, message)
+			count.Add(-1)
+			if err == nil {
 				once.Do(func() {
 					result = ret
-					send = true
 					done <- struct{}{}
 				})
 			} else {
 				errOnce.Do(func() {
 					errResult = err
 				})
-			}
-			count.Add(-1)
-			if count.Load() == 0 && !send{
-				done <- struct{}{}
+				if count.Load() == 0 {
+					once.Do(func() {
+						done <- struct{}{}
+					})
+				}
 			}
 		}()
 	}
 	<-done
-	ctx.Done()
+	cancel()
 	close(done)
-	done = nil
+	if(result == nil && errResult == nil){
+		errResult = E.New("dns batch Exchange: all failed")
+	}
 	return result, errResult
 }
 
@@ -111,7 +115,7 @@ func (t *BatchTransport) Lookup(ctx context.Context, domain string, strategy Dom
 	var once    sync.Once
 	var errOnce sync.Once
 	done := make(chan struct{})
-	
+	ctx, cancel := context.WithCancel(ctx)
 	for _, transport := range t.transports {
 		if transport.Raw(){
 			continue
@@ -119,27 +123,31 @@ func (t *BatchTransport) Lookup(ctx context.Context, domain string, strategy Dom
 		count.Add(1)
 		transport := transport
 		go func(){
-			var send = false
-			if ret, err := transport.Lookup(ctx, domain, strategy); err == nil {
+			ret, err := transport.Lookup(ctx, domain, strategy)
+			count.Add(-1)
+			if err == nil {
 				once.Do(func() {
 					result = ret
-					send = true
 					done <- struct{}{}
 				})
 			} else {
 				errOnce.Do(func() {
 					errResult = err
 				})
-			}
-			count.Add(-1)
-			if count.Load() == 0 && !send{
-				done <- struct{}{}
+				
+				if count.Load() == 0{
+					once.Do(func() {
+						done <- struct{}{}
+					})
+				}
 			}
 		}()
 	}
 	<-done
-	ctx.Done()
+	cancel()
 	close(done)
-	done = nil
+	if(result == nil && errResult == nil){
+		errResult = E.New("dns batch Lookup: all failed:", domain)
+	}
 	return result, errResult
 }
