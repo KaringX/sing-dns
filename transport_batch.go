@@ -97,7 +97,7 @@ func (t *BatchTransport) Exchange(ctx context.Context, message *dns.Msg) (*dns.M
 				once.Do(func() {
 					result = ret
 					done <- struct{}{}
-					t.logger.InfoContext(ctx, "exchanged ["+domain+"] by:", transport.Address())
+					t.logger.InfoContext(ctx, "exchanged ["+domain+"] by: ", transport.Address())
 				})
 			} else {
 				errOnce.Do(func() {
@@ -116,6 +116,8 @@ func (t *BatchTransport) Exchange(ctx context.Context, message *dns.Msg) (*dns.M
 	close(done)
 	if result == nil && errResult == nil {
 		errResult = E.New("exchage: all failed")
+	} else if result != nil {
+		errResult = nil
 	}
 	return result, errResult
 }
@@ -141,7 +143,7 @@ func (t *BatchTransport) Lookup(ctx context.Context, domain string, strategy Dom
 				once.Do(func() {
 					result = ret
 					done <- struct{}{}
-					t.logger.InfoContext(ctx, "lookuped ["+domain+"] by:", transport.Address())
+					t.logger.InfoContext(ctx, "lookuped ["+domain+"] by: ", transport.Address())
 				})
 			} else {
 				errOnce.Do(func() {
@@ -161,6 +163,8 @@ func (t *BatchTransport) Lookup(ctx context.Context, domain string, strategy Dom
 	close(done)
 	if result == nil && errResult == nil {
 		errResult = E.New("lookup: all failed:", domain)
+	} else if result != nil {
+		errResult = nil
 	}
 	return result, errResult
 }
