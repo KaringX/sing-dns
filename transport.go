@@ -17,6 +17,7 @@ type TransportConstructor = func(options TransportOptions) (Transport, error)
 
 type Transport interface {
 	Name() string
+	Address() string //karing
 	Start() error
 	Reset()
 	Close() error
@@ -47,7 +48,7 @@ func RegisterTransport(schemes []string, constructor TransportConstructor) {
 }
 
 func CreateTransport(options TransportOptions) (Transport, error) {
-	if len(options.Addresses) > 0 {//karing
+	if len(options.Addresses) > 0 { //karing
 		return createBatchTransport(options)
 	}
 	constructor := transports[options.Address]
@@ -73,7 +74,7 @@ func CreateTransport(options TransportOptions) (Transport, error) {
 	return transport, nil
 }
 func createBatchTransport(options TransportOptions) (Transport, error) { //karing
-	if len(options.Address) > 0 && !slices.Contains(options.Addresses, options.Address){
+	if len(options.Address) > 0 && !slices.Contains(options.Addresses, options.Address) {
 		options.Addresses = append(options.Addresses, options.Address)
 	}
 	if len(options.Addresses) == 0 {
@@ -94,7 +95,7 @@ func createBatchTransport(options TransportOptions) (Transport, error) { //karin
 		if constructor == nil {
 			return nil, E.New("unknown DNS server format: " + address)
 		}
-		
+
 		options.Address = address
 		transport, err := constructor(options)
 		if err != nil {
@@ -105,7 +106,7 @@ func createBatchTransport(options TransportOptions) (Transport, error) { //karin
 		}
 		batchTransports = append(batchTransports, transport)
 	}
-	
-	transport := NewBatchTransport(options.Name, batchTransports)
+
+	transport := NewBatchTransport(options.Name, batchTransports, options.Logger)
 	return transport, nil
 }

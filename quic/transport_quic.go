@@ -32,6 +32,7 @@ func init() {
 
 type Transport struct {
 	name       string
+	address    string //karing
 	ctx        context.Context
 	dialer     N.Dialer
 	serverAddr M.Socksaddr
@@ -54,6 +55,7 @@ func NewTransport(options dns.TransportOptions) (*Transport, error) {
 	}
 	return &Transport{
 		name:       options.Name,
+		address:    options.Address,
 		ctx:        options.Context,
 		dialer:     options.Dialer,
 		serverAddr: serverAddr,
@@ -62,6 +64,10 @@ func NewTransport(options dns.TransportOptions) (*Transport, error) {
 
 func (t *Transport) Name() string {
 	return t.name
+}
+
+func (t *Transport) Address() string { //karing
+	return t.address
 }
 
 func (t *Transport) Start() error {
