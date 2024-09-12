@@ -37,7 +37,7 @@ func NewUDPTransport(options TransportOptions) (*UDPTransport, error) {
 		serverAddr = M.ParseSocksaddr(serverURL.Host)
 	}
 	if !serverAddr.IsValid() {
-		return nil, E.New("invalid server address")
+		return nil, E.New("invalid server address:", options.Address) //karing
 	}
 	if serverAddr.Port == 0 {
 		serverAddr.Port = 53

@@ -24,6 +24,7 @@ type myTransportHandler interface {
 
 type myTransportAdapter struct {
 	name       string
+	address    string //karing
 	ctx        context.Context
 	cancel     context.CancelFunc
 	dialer     N.Dialer
@@ -38,6 +39,7 @@ func newAdapter(options TransportOptions, serverAddr M.Socksaddr) myTransportAda
 	ctx, cancel := context.WithCancel(options.Context)
 	return myTransportAdapter{
 		name:       options.Name,
+		address:    options.Address, //karing
 		ctx:        ctx,
 		cancel:     cancel,
 		dialer:     options.Dialer,
@@ -48,6 +50,10 @@ func newAdapter(options TransportOptions, serverAddr M.Socksaddr) myTransportAda
 
 func (t *myTransportAdapter) Name() string {
 	return t.name
+}
+
+func (t *myTransportAdapter) Address() string { //karing
+	return t.address
 }
 
 func (t *myTransportAdapter) Start() error {
