@@ -93,12 +93,7 @@ func (t *LocalTransport) Exchange(ctx context.Context, message *dns.Msg) (*dns.M
 		},
 		Question: message.Question,
 	}
-	var timeToLive uint32
-	if rewriteTTL, loaded := RewriteTTLFromContext(ctx); loaded {
-		timeToLive = rewriteTTL
-	} else {
-		timeToLive = DefaultTTL
-	}
+
 	for _, address := range result {
 		if address.Is4In6() {
 			address = netip.AddrFrom4(address.As4())
@@ -109,7 +104,7 @@ func (t *LocalTransport) Exchange(ctx context.Context, message *dns.Msg) (*dns.M
 					Name:   question.Name,
 					Rrtype: dns.TypeA,
 					Class:  dns.ClassINET,
-					Ttl:    timeToLive,
+					Ttl:    DefaultTTL,
 				},
 				A: address.AsSlice(),
 			})
@@ -119,7 +114,7 @@ func (t *LocalTransport) Exchange(ctx context.Context, message *dns.Msg) (*dns.M
 					Name:   question.Name,
 					Rrtype: dns.TypeAAAA,
 					Class:  dns.ClassINET,
-					Ttl:    timeToLive,
+					Ttl:    DefaultTTL,
 				},
 				AAAA: address.AsSlice(),
 			})

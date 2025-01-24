@@ -27,6 +27,7 @@ func init() {
 
 type TLSTransport struct {
 	name        string
+	address     string //karing
 	dialer      N.Dialer
 	logger      logger.ContextLogger
 	serverAddr  M.Socksaddr
@@ -57,6 +58,7 @@ func NewTLSTransport(options TransportOptions) (*TLSTransport, error) {
 func newTLSTransport(options TransportOptions, serverAddr M.Socksaddr) *TLSTransport {
 	return &TLSTransport{
 		name:       options.Name,
+		address:    options.Address, //karing
 		dialer:     options.Dialer,
 		logger:     options.Logger,
 		serverAddr: serverAddr,
@@ -65,6 +67,10 @@ func newTLSTransport(options TransportOptions, serverAddr M.Socksaddr) *TLSTrans
 
 func (t *TLSTransport) Name() string {
 	return t.name
+}
+
+func (t *TLSTransport) Address() string { //karing
+	return t.address
 }
 
 func (t *TLSTransport) Start() error {

@@ -29,6 +29,7 @@ func init() {
 
 type UDPTransport struct {
 	name         string
+	address      string //karing
 	optCtx       context.Context
 	ctx          context.Context
 	cancel       context.CancelFunc
@@ -58,6 +59,7 @@ func NewUDPTransport(options TransportOptions) (*UDPTransport, error) {
 	ctx, cancel := context.WithCancel(options.Context)
 	return &UDPTransport{
 		name:         options.Name,
+		address:      options.Address, //karing
 		optCtx:       options.Context,
 		ctx:          ctx,
 		cancel:       cancel,
@@ -72,6 +74,10 @@ func NewUDPTransport(options TransportOptions) (*UDPTransport, error) {
 
 func (t *UDPTransport) Name() string {
 	return t.name
+}
+
+func (t *UDPTransport) Address() string { //karing
+	return t.address
 }
 
 func (t *UDPTransport) Start() error {
