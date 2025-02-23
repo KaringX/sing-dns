@@ -95,7 +95,12 @@ func (t *TLSTransport) Raw() bool {
 	return true
 }
 
-func (t *TLSTransport) Exchange(ctx context.Context, message *dns.Msg) (*dns.Msg, error) {
+func (t *TLSTransport) Exchange(ctx context.Context, message *dns.Msg) (response *dns.Msg, err error) { //karing
+	defer func() { //karing
+		if e := recover(); e != nil {
+			err = E.Cause(E.New(e), "panic: sing-dns:TLSTransport.Exchange, conn may be closed")
+		}
+	}()
 	t.access.Lock()
 	conn := t.connections.PopFront()
 	t.access.Unlock()
