@@ -91,7 +91,8 @@ func (t *BatchTransport) Exchange(ctx context.Context, message *dns.Msg) (*dns.M
 		count.Add(1)
 		transport := transport
 		go func() {
-			ret, err := transport.Exchange(ctx, message)
+			copydMessage := message.Copy()
+			ret, err := transport.Exchange(ctx, copydMessage)
 			count.Add(-1)
 			if err == nil {
 				once.Do(func() {
