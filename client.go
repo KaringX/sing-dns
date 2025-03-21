@@ -413,6 +413,13 @@ func (c *Client) ClearCache() {
 	}
 }
 
+func (c *Client) Close() { //karing
+	c.ClearCache()
+	c.cache = nil
+	c.transportCache = nil
+	c.rdrc = nil
+}
+
 func (c *Client) LookupCache(ctx context.Context, domain string, strategy DomainStrategy) ([]netip.Addr, bool) {
 	if c.disableCache || c.independentCache {
 		return nil, false
