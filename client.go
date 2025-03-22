@@ -614,8 +614,14 @@ func (c *Client) loadResponse(question dns.Question, transport Transport) (*dns.
 	} else {
 		var expireAt time.Time
 		if !c.independentCache {
+			if c.cache == nil { //karing
+				return nil, 0
+			}
 			response, expireAt, loaded = c.cache.GetWithLifetime(question)
 		} else {
+			if c.transportCache == nil { //karing
+				return nil, 0
+			}
 			response, expireAt, loaded = c.transportCache.GetWithLifetime(transportCacheKey{
 				Question:      question,
 				transportName: transport.Name(),
