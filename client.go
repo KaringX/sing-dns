@@ -492,8 +492,14 @@ func (c *Client) storeCache(transport Transport, question dns.Question, message 
 	}
 	if c.disableExpire {
 		if !c.independentCache {
+			if c.cache == nil { //karing
+				return
+			}
 			c.cache.Add(question, message)
 		} else {
+			if c.transportCache == nil { //karing
+				return
+			}
 			c.transportCache.Add(transportCacheKey{
 				Question:      question,
 				transportName: transport.Name(),
@@ -502,8 +508,14 @@ func (c *Client) storeCache(transport Transport, question dns.Question, message 
 		return
 	}
 	if !c.independentCache {
+		if c.cache == nil { //karing
+			return
+		}
 		c.cache.AddWithLifetime(question, message, time.Second*time.Duration(timeToLive))
 	} else {
+		if c.transportCache == nil { //karing
+			return
+		}
 		c.transportCache.AddWithLifetime(transportCacheKey{
 			Question:      question,
 			transportName: transport.Name(),
@@ -582,8 +594,14 @@ func (c *Client) loadResponse(question dns.Question, transport Transport) (*dns.
 	)
 	if c.disableExpire {
 		if !c.independentCache {
+			if c.cache == nil { //karing
+				return nil, 0
+			}
 			response, loaded = c.cache.Get(question)
 		} else {
+			if c.transportCache == nil { //karing
+				return nil, 0
+			}
 			response, loaded = c.transportCache.Get(transportCacheKey{
 				Question:      question,
 				transportName: transport.Name(),
@@ -609,8 +627,14 @@ func (c *Client) loadResponse(question dns.Question, transport Transport) (*dns.
 		timeNow := time.Now()
 		if timeNow.After(expireAt) {
 			if !c.independentCache {
+				if c.cache == nil { //karing
+					return nil, 0
+				}
 				c.cache.Remove(question)
 			} else {
+				if c.transportCache == nil { //karing
+					return nil, 0
+				}
 				c.transportCache.Remove(transportCacheKey{
 					Question:      question,
 					transportName: transport.Name(),
