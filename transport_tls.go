@@ -27,7 +27,6 @@ func init() {
 
 type TLSTransport struct {
 	name        string
-	address     string //karing
 	dialer      N.Dialer
 	logger      logger.ContextLogger
 	serverAddr  M.Socksaddr
@@ -47,7 +46,7 @@ func NewTLSTransport(options TransportOptions) (*TLSTransport, error) {
 	}
 	serverAddr := M.ParseSocksaddr(serverURL.Host)
 	if !serverAddr.IsValid() {
-		return nil, E.New("invalid server address:", options.Address) //karing
+		return nil, E.New("invalid server address")
 	}
 	if serverAddr.Port == 0 {
 		serverAddr.Port = 853
@@ -58,7 +57,6 @@ func NewTLSTransport(options TransportOptions) (*TLSTransport, error) {
 func newTLSTransport(options TransportOptions, serverAddr M.Socksaddr) *TLSTransport {
 	return &TLSTransport{
 		name:       options.Name,
-		address:    options.Address, //karing
 		dialer:     options.Dialer,
 		logger:     options.Logger,
 		serverAddr: serverAddr,
@@ -67,10 +65,6 @@ func newTLSTransport(options TransportOptions, serverAddr M.Socksaddr) *TLSTrans
 
 func (t *TLSTransport) Name() string {
 	return t.name
-}
-
-func (t *TLSTransport) Address() string { //karing
-	return t.address
 }
 
 func (t *TLSTransport) Start() error {
@@ -95,12 +89,7 @@ func (t *TLSTransport) Raw() bool {
 	return true
 }
 
-func (t *TLSTransport) Exchange(ctx context.Context, message *dns.Msg) (response *dns.Msg, err error) { //karing
-	defer func() { //karing
-		if e := recover(); e != nil {
-			err = E.Cause(E.New(e), "panic: sing-dns:TLSTransport.Exchange, conn may be closed")
-		}
-	}()
+func (t *TLSTransport) Exchange(ctx context.Context, message *dns.Msg) (*dns.Msg, error) {
 	t.access.Lock()
 	conn := t.connections.PopFront()
 	t.access.Unlock()

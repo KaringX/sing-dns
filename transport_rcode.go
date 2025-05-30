@@ -20,9 +20,8 @@ func init() {
 }
 
 type RCodeTransport struct {
-	name    string
-	address string //karing
-	code    RCodeError
+	name string
+	code RCodeError
 }
 
 func NewRCodeTransport(options TransportOptions) (*RCodeTransport, error) {
@@ -32,17 +31,17 @@ func NewRCodeTransport(options TransportOptions) (*RCodeTransport, error) {
 	}
 	switch serverURL.Host {
 	case "success":
-		return &RCodeTransport{options.Name, options.Address, RCodeSuccess}, nil //karing
+		return &RCodeTransport{options.Name, RCodeSuccess}, nil
 	case "format_error":
-		return &RCodeTransport{options.Name, options.Address, RCodeFormatError}, nil //karing
+		return &RCodeTransport{options.Name, RCodeFormatError}, nil
 	case "server_failure":
-		return &RCodeTransport{options.Name, options.Address, RCodeServerFailure}, nil //karing
+		return &RCodeTransport{options.Name, RCodeServerFailure}, nil
 	case "name_error":
-		return &RCodeTransport{options.Name, options.Address, RCodeNameError}, nil //karing
+		return &RCodeTransport{options.Name, RCodeNameError}, nil
 	case "not_implemented":
-		return &RCodeTransport{options.Name, options.Address, RCodeNotImplemented}, nil //karing
+		return &RCodeTransport{options.Name, RCodeNotImplemented}, nil
 	case "refused":
-		return &RCodeTransport{options.Name, options.Address, RCodeRefused}, nil //karing
+		return &RCodeTransport{options.Name, RCodeRefused}, nil
 	default:
 		return nil, E.New("unknown rcode: " + options.Name)
 	}
@@ -50,10 +49,6 @@ func NewRCodeTransport(options TransportOptions) (*RCodeTransport, error) {
 
 func (t *RCodeTransport) Name() string {
 	return t.name
-}
-
-func (t *RCodeTransport) Address() string { //karing
-	return t.address
 }
 
 func (t *RCodeTransport) Start() error {

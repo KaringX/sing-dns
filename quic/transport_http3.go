@@ -32,7 +32,6 @@ func init() {
 
 type HTTP3Transport struct {
 	name        string
-	address     string //karing
 	destination string
 	transport   *http3.Transport
 }
@@ -45,7 +44,6 @@ func NewHTTP3Transport(options dns.TransportOptions) (*HTTP3Transport, error) {
 	serverURL.Scheme = "https"
 	return &HTTP3Transport{
 		name:        options.Name,
-		address:     options.Address, //karing
 		destination: serverURL.String(),
 		transport: &http3.Transport{
 			Dial: func(ctx context.Context, addr string, tlsCfg *tls.Config, cfg *quic.Config) (quic.EarlyConnection, error) {
@@ -62,10 +60,6 @@ func NewHTTP3Transport(options dns.TransportOptions) (*HTTP3Transport, error) {
 
 func (t *HTTP3Transport) Name() string {
 	return t.name
-}
-
-func (t *HTTP3Transport) Address() string { //karing
-	return t.address
 }
 
 func (t *HTTP3Transport) Start() error {

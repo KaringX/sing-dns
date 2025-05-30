@@ -27,7 +27,6 @@ func init() {
 
 type TCPTransport struct {
 	name       string
-	address    string //karing
 	dialer     N.Dialer
 	serverAddr M.Socksaddr
 }
@@ -39,7 +38,7 @@ func NewTCPTransport(options TransportOptions) (*TCPTransport, error) {
 	}
 	serverAddr := M.ParseSocksaddr(serverURL.Host)
 	if !serverAddr.IsValid() {
-		return nil, E.New("invalid server address:", options.Address) //karing
+		return nil, E.New("invalid server address")
 	}
 	if serverAddr.Port == 0 {
 		serverAddr.Port = 53
@@ -50,7 +49,6 @@ func NewTCPTransport(options TransportOptions) (*TCPTransport, error) {
 func newTCPTransport(options TransportOptions, serverAddr M.Socksaddr) *TCPTransport {
 	return &TCPTransport{
 		name:       options.Name,
-		address:    options.Address, //karing
 		dialer:     options.Dialer,
 		serverAddr: serverAddr,
 	}
@@ -58,10 +56,6 @@ func newTCPTransport(options TransportOptions, serverAddr M.Socksaddr) *TCPTrans
 
 func (t *TCPTransport) Name() string {
 	return t.name
-}
-
-func (t *TCPTransport) Address() string { //karing
-	return t.address
 }
 
 func (t *TCPTransport) Start() error {

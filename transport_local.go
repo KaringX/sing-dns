@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"net/netip"
+	"os"
 	"sort"
 
 	"github.com/sagernet/sing/common"
@@ -23,14 +24,12 @@ var _ Transport = (*LocalTransport)(nil)
 
 type LocalTransport struct {
 	name     string
-	address  string //karing
 	resolver net.Resolver
 }
 
 func NewLocalTransport(options TransportOptions) *LocalTransport {
 	return &LocalTransport{
-		name:    options.Name,
-		address: options.Address, //karing
+		name: options.Name,
 		resolver: net.Resolver{
 			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 				return options.Dialer.DialContext(ctx, N.NetworkName(network), M.ParseSocksaddr(address))
@@ -41,10 +40,6 @@ func NewLocalTransport(options TransportOptions) *LocalTransport {
 
 func (t *LocalTransport) Name() string {
 	return t.name
-}
-
-func (t *LocalTransport) Address() string { //karing
-	return t.address
 }
 
 func (t *LocalTransport) Start() error {
@@ -59,68 +54,11 @@ func (t *LocalTransport) Close() error {
 }
 
 func (t *LocalTransport) Raw() bool {
-	return true //karing
-	//return false //karing
+	return false
 }
 
-func (t *LocalTransport) Exchange(ctx context.Context, message *dns.Msg) (*dns.Msg, error) { //karing
-	question := message.Question[0]
-	domain := question.Name
-	var strategy DomainStrategy
-	if question.Qtype == dns.TypeA {
-		strategy = DomainStrategyUseIPv4
-	} else {
-		strategy = DomainStrategyUseIPv6
-	}
-	var network string
-	switch strategy {
-	case DomainStrategyAsIS, DomainStrategyPreferIPv4, DomainStrategyPreferIPv6:
-		network = "ip"
-	case DomainStrategyUseIPv4:
-		network = "ip4"
-	case DomainStrategyUseIPv6:
-		network = "ip6"
-	}
-	result, err := t.resolver.LookupNetIP(ctx, network, domain)
-	if err != nil {
-		return nil, err
-	}
-	response := dns.Msg{
-		MsgHdr: dns.MsgHdr{
-			Id:       message.Id,
-			Rcode:    dns.RcodeSuccess,
-			Response: true,
-		},
-		Question: message.Question,
-	}
-
-	for _, address := range result {
-		if address.Is4In6() {
-			address = netip.AddrFrom4(address.As4())
-		}
-		if address.Is4() {
-			response.Answer = append(response.Answer, &dns.A{
-				Hdr: dns.RR_Header{
-					Name:   question.Name,
-					Rrtype: dns.TypeA,
-					Class:  dns.ClassINET,
-					Ttl:    DefaultTTL,
-				},
-				A: address.AsSlice(),
-			})
-		} else {
-			response.Answer = append(response.Answer, &dns.AAAA{
-				Hdr: dns.RR_Header{
-					Name:   question.Name,
-					Rrtype: dns.TypeAAAA,
-					Class:  dns.ClassINET,
-					Ttl:    DefaultTTL,
-				},
-				AAAA: address.AsSlice(),
-			})
-		}
-	}
-	return &response, nil
+func (t *LocalTransport) Exchange(ctx context.Context, message *dns.Msg) (*dns.Msg, error) {
+	return nil, os.ErrInvalid
 }
 
 func (t *LocalTransport) Lookup(ctx context.Context, domain string, strategy DomainStrategy) ([]netip.Addr, error) {

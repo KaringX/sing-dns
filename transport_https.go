@@ -22,7 +22,6 @@ var _ Transport = (*HTTPSTransport)(nil)
 
 type HTTPSTransport struct {
 	name        string
-	address     string //karing
 	destination string
 	transport   *http.Transport
 }
@@ -36,7 +35,6 @@ func init() {
 func NewHTTPSTransport(options TransportOptions) *HTTPSTransport {
 	return &HTTPSTransport{
 		name:        options.Name,
-		address:     options.Address, //karing
 		destination: options.Address,
 		transport: &http.Transport{
 			ForceAttemptHTTP2: true,
@@ -49,10 +47,6 @@ func NewHTTPSTransport(options TransportOptions) *HTTPSTransport {
 
 func (t *HTTPSTransport) Name() string {
 	return t.name
-}
-
-func (t *HTTPSTransport) Address() string { //karing
-	return t.address
 }
 
 func (t *HTTPSTransport) Start() error {
